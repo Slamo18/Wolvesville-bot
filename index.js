@@ -56,4 +56,3 @@ setTimeout(() => {
     checkNewMembers();
     setInterval(checkNewMembers, 10000);
 }, 2000);
-            
