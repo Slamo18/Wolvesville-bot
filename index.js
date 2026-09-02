@@ -3,8 +3,7 @@ const http = require('http');
 
 const BOT_ID = process.env.BOT_ID;
 const API_KEY = process.env.API_KEY;
-const CLAN_ID = process.env.CLAN_ID;
-const CLAN_NAME = process.env.CLAN_NAME || "Asl";
+const CLAN_ID = process.env.CLAN_ID || "cc381093-ddbd-48f7-aea1-1740959a2ce7";
 const PORT = process.env.PORT || 3000;
 
 let previousMembers = null;
@@ -40,7 +39,7 @@ function sendWelcomeMessage(newMemberName) {
 function checkMembers() {
     const options = {
         hostname: 'api.wolvesville.com',
-        path: `/clans/search?name=${encodeURIComponent(CLAN_NAME)}`,
+        path: `/clans/${CLAN_ID}`,
         headers: { 'Authorization': `Bot ${API_KEY}` }
     };
 
@@ -49,9 +48,8 @@ function checkMembers() {
         res.on('data', (chunk) => data += chunk);
         res.on('end', () => {
             try {
-                const clans = JSON.parse(data);
-                if (clans && clans.length > 0) {
-                    const clan = clans[0];
+                const clan = JSON.parse(data);
+                if (clan && clan.id) {
                     console.log(`Clan Found -> Name: ${clan.name} | Members: ${clan.memberCount}`);
                     
                     if (clan.members) {
@@ -80,7 +78,7 @@ function checkMembers() {
 
 // تشغيل الفحص فوراً ثم كل 5 ثوانٍ
 setTimeout(() => {
-    console.log('Bot is connected and ready to monitor members!');
+    console.log('Bot is connected and ready to monitor exact clan ID!');
     checkMembers();
     setInterval(checkMembers, 5000);
 }, 2000);
