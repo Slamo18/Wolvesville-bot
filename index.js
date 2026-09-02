@@ -1,14 +1,15 @@
-    const https = require('https');
+const https = require('https');
 const http = require('http');
 
+const BOT_ID = process.env.BOT_ID;
 const API_KEY = process.env.API_KEY;
 const CLAN_ID = process.env.CLAN_ID;
 const CLAN_NAME = process.env.CLAN_NAME || "Asl";
 const PORT = process.env.PORT || 3000;
 
-let previousMembers = null; // لتخزين الأعضاء ومقارنتهم
+let previousMembers = null;
 
-// تشغيل سيرفر وهمي لإرضاء Render
+// تشغيل سيرفر وهمي لإرضاء Render وبقائه نشطاً
 http.createServer((req, res) => res.end('OK')).listen(PORT);
 
 function sendWelcomeMessage(newMemberName) {
@@ -51,6 +52,8 @@ function checkMembers() {
                 const clans = JSON.parse(data);
                 if (clans && clans.length > 0) {
                     const clan = clans[0];
+                    console.log(`Clan Found -> Name: ${clan.name} | Members: ${clan.memberCount}`);
+                    
                     if (clan.members) {
                         const currentMembersMap = new Map(clan.members.map(m => [m.id, m.username]));
                         
@@ -66,10 +69,18 @@ function checkMembers() {
                         previousMembers = currentMembersMap;
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('Error parsing data:', e.message);
+            }
         });
+    }).on('error', (err) => {
+        console.error('Request error:', err.message);
     });
 }
 
-// فحص الكلان كل 5 ثوانٍ بدقة عالية
-setInterval(checkMembers, 5000);
+// تشغيل الفحص فوراً ثم كل 5 ثوانٍ
+setTimeout(() => {
+    console.log('Bot is connected and ready to monitor members!');
+    checkMembers();
+    setInterval(checkMembers, 5000);
+}, 2000);
