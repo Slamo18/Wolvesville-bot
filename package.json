@@ -6,6 +6,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "wolvesville-api": "git+https://github.com/wolvesville/wolvesville-api-js.git#main"
+    "wolvesville-node": "^1.0.0"
   }
 }
