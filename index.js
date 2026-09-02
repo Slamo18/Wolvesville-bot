@@ -2,21 +2,21 @@ const https = require('https');
 
 const BOT_ID = process.env.BOT_ID;
 const API_KEY = process.env.API_KEY;
-const CLAN_ID = process.env.CLAN_ID;
+const CLAN_NAME = process.env.CLAN_NAME; // اسم الكلان الخاص بك
 
 console.log('Starting Wolvesville bot...');
 
 // Function to send a chat message to the clan
 function sendClanChatMessage(message) {
-    if (!CLAN_ID) {
-        console.log('Error: CLAN_ID is missing in environment variables.');
+    if (!CLAN_NAME) {
+        console.log('Error: CLAN_NAME is missing in environment variables.');
         return;
     }
 
     const data = JSON.stringify({ message: message });
     const options = {
         hostname: 'api.wolvesville.com',
-        path: `/clans/${CLAN_ID}/chat`,
+        path: `/clans/${encodeURIComponent(CLAN_NAME)}/chat`,
         method: 'POST',
         headers: {
             'Authorization': `Bot ${API_KEY}`,
@@ -41,13 +41,11 @@ function sendClanChatMessage(message) {
     req.end();
 }
 
-// Function to check clan members
+// Function to check clan members using the authorized clans endpoint
 function checkNewMembers() {
-    if (!CLAN_ID) return;
-
     const options = {
         hostname: 'api.wolvesville.com',
-        path: `/clans/${CLAN_ID}/members`,
+        path: `/clans/authorized`,
         method: 'GET',
         headers: {
             'Authorization': `Bot ${API_KEY}`,
@@ -60,10 +58,10 @@ function checkNewMembers() {
         res.on('data', (chunk) => { data += chunk; });
         res.on('end', () => {
             try {
-                const members = JSON.parse(data);
-                console.log('Members fetched successfully. Total count:', Array.isArray(members) ? members.length : 'Unknown');
+                const clans = JSON.parse(data);
+                console.log('Authorized clans fetched successfully. Total:', Array.isArray(clans) ? clans.length : 'Unknown');
             } catch (e) {
-                console.error('Error parsing members data:', e);
+                console.error('Error parsing clans data:', e);
             }
         });
     }).on('error', (err) => {
@@ -75,7 +73,6 @@ function checkNewMembers() {
 setTimeout(() => {
     console.log('Bot is connected and ready!');
     checkNewMembers();
-    // Check members every 10 seconds
+    // Check every 10 seconds
     setInterval(checkNewMembers, 10000);
 }, 2000);
-          
