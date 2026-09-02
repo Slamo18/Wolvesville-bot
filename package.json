@@ -1,13 +1,11 @@
 {
-  "name": "wolvesville-clan-bot",
+  "name": "wolvesville-bot",
   "version": "1.0.0",
-  "description": "A simple Wolvesville clan bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "wolvesville-api": "*"
+    "wolvesville-node": "*"
   }
-} 
-
+}
