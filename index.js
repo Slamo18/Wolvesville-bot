@@ -1,10 +1,20 @@
 const https = require('https');
+const http = require('http');
 
 const BOT_ID = process.env.BOT_ID;
 const API_KEY = process.env.API_KEY;
-const CLAN_NAME = process.env.CLAN_NAME; // اسم الكلان الخاص بك
+const CLAN_NAME = process.env.CLAN_NAME;
+const PORT = process.env.PORT || 3000;
 
 console.log('Starting Wolvesville bot...');
+
+// Create a dummy HTTP server to satisfy Render's web service port requirement for free tier
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Bot is running successfully!');
+}).listen(PORT, () => {
+    console.log(`Dummy HTTP server is listening on port ${PORT}`);
+});
 
 // Function to send a chat message to the clan
 function sendClanChatMessage(message) {
