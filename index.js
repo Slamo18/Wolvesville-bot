@@ -50,7 +50,7 @@ function checkMembers() {
             try {
                 const clan = JSON.parse(data);
                 if (clan && clan.id) {
-                    console.log(`Clan Found -> Name: ${clan.name} | Members: ${clan.memberCount}`);
+                    console.log(`[Check 5s] Clan: ${clan.name} | Members Count: ${clan.memberCount}`);
                     
                     if (clan.members) {
                         const currentMembersMap = new Map(clan.members.map(m => [m.id, m.username]));
@@ -66,6 +66,8 @@ function checkMembers() {
                         }
                         previousMembers = currentMembersMap;
                     }
+                } else {
+                    console.log('[Check 5s] Waiting for clan data response...');
                 }
             } catch (e) {
                 console.error('Error parsing data:', e.message);
@@ -76,9 +78,9 @@ function checkMembers() {
     });
 }
 
-// تشغيل الفحص فوراً ثم كل 5 ثوانٍ
+// بدء الفحص فوراً وتكراره كل 5 ثوانٍ بدقة
 setTimeout(() => {
-    console.log('Bot is connected and ready to monitor exact clan ID!');
+    console.log('Bot is active and polling clan members every 5 seconds!');
     checkMembers();
     setInterval(checkMembers, 5000);
 }, 2000);
