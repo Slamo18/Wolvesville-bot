@@ -5,5 +5,7 @@
   "scripts": {
     "start": "node index.js"
   },
-  "dependencies": {}
+  "dependencies": {
+    "wolvesville-api": "git+https://github.com/wolvesville/wolvesville-api-js.git#main"
+  }
 }
