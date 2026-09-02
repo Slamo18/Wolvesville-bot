@@ -3,6 +3,7 @@ const http = require('http');
 
 const BOT_ID = process.env.BOT_ID;
 const API_KEY = process.env.API_KEY;
+const CLAN_NAME = process.env.CLAN_NAME || "Asl";
 const CLAN_ID = process.env.CLAN_ID || "cc381093-ddbd-48f7-aea1-1740959a2ce7";
 const PORT = process.env.PORT || 3000;
 
@@ -11,8 +12,6 @@ let previousMembers = null;
 http.createServer((req, res) => res.end('OK')).listen(PORT);
 
 function sendWelcomeMessage(newMemberName) {
-    if (!CLAN_ID) return;
-
     const messageText = `🐺 Welcome to Asl! 🎉 Glad to have you, ${newMemberName}.\n📌 Please contribute 200 Gold as an entry fee. Enjoy! 🚀`;
     const data = JSON.stringify({ message: messageText });
     
@@ -38,23 +37,20 @@ function sendWelcomeMessage(newMemberName) {
 function checkMembers() {
     const options = {
         hostname: 'api.wolvesville.com',
-        path: `/clans/${CLAN_ID}`,
-        headers: { 
-            'Authorization': `Bot ${API_KEY}`,
-            'Accept': 'application/json'
-        }
+        path: `/clans/search?name=${encodeURIComponent(CLAN_NAME)}`,
+        headers: { 'Authorization': `Bot ${API_KEY}` }
     };
 
     https.get(options, (res) => {
         let data = '';
         res.on('data', (chunk) => data += chunk);
         res.on('end', () => {
-            console.log(`[API Response Status]: ${res.statusCode}`);
-            console.log(`[API Response Data]: ${data.substring(0, 150)}...`); // طباعة أول جزء من الرد لنفحصه
             try {
-                const clan = JSON.parse(data);
-                if (clan && clan.id) {
-                    console.log(`✅ Success! Clan: ${clan.name} | Members Count: ${clan.memberCount}`);
+                const clans = JSON.parse(data);
+                if (clans && clans.length > 0) {
+                    // البحث عن الكلان المطابق تماماً للـ ID الخاص بك لضمان عدم حدوث أي خطأ
+                    const clan = clans.find(c => c.id === CLAN_ID) || clans[0];
+                    console.log(`✅ Active Clan: ${clan.name} | ID: ${clan.id} | Members: ${clan.memberCount}`);
                     
                     if (clan.members) {
                         const currentMembersMap = new Map(clan.members.map(m => [m.id, m.username]));
@@ -81,7 +77,8 @@ function checkMembers() {
 }
 
 setTimeout(() => {
-    console.log('Bot is active and polling clan members...');
+    console.log('Bot is active and monitoring clan accurately!');
     checkMembers();
     setInterval(checkMembers, 5000);
 }, 2000);
+        
