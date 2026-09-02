@@ -8,7 +8,6 @@ const PORT = process.env.PORT || 3000;
 
 let previousMembers = null;
 
-// تشغيل سيرفر وهمي لإرضاء Render وبقائه نشطاً
 http.createServer((req, res) => res.end('OK')).listen(PORT);
 
 function sendWelcomeMessage(newMemberName) {
@@ -40,17 +39,22 @@ function checkMembers() {
     const options = {
         hostname: 'api.wolvesville.com',
         path: `/clans/${CLAN_ID}`,
-        headers: { 'Authorization': `Bot ${API_KEY}` }
+        headers: { 
+            'Authorization': `Bot ${API_KEY}`,
+            'Accept': 'application/json'
+        }
     };
 
     https.get(options, (res) => {
         let data = '';
         res.on('data', (chunk) => data += chunk);
         res.on('end', () => {
+            console.log(`[API Response Status]: ${res.statusCode}`);
+            console.log(`[API Response Data]: ${data.substring(0, 150)}...`); // طباعة أول جزء من الرد لنفحصه
             try {
                 const clan = JSON.parse(data);
                 if (clan && clan.id) {
-                    console.log(`[Check 5s] Clan: ${clan.name} | Members Count: ${clan.memberCount}`);
+                    console.log(`✅ Success! Clan: ${clan.name} | Members Count: ${clan.memberCount}`);
                     
                     if (clan.members) {
                         const currentMembersMap = new Map(clan.members.map(m => [m.id, m.username]));
@@ -66,8 +70,6 @@ function checkMembers() {
                         }
                         previousMembers = currentMembersMap;
                     }
-                } else {
-                    console.log('[Check 5s] Waiting for clan data response...');
                 }
             } catch (e) {
                 console.error('Error parsing data:', e.message);
@@ -78,9 +80,8 @@ function checkMembers() {
     });
 }
 
-// بدء الفحص فوراً وتكراره كل 5 ثوانٍ بدقة
 setTimeout(() => {
-    console.log('Bot is active and polling clan members every 5 seconds!');
+    console.log('Bot is active and polling clan members...');
     checkMembers();
     setInterval(checkMembers, 5000);
 }, 2000);
