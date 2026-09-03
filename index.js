@@ -5,12 +5,12 @@ const API_KEY = process.env.API_KEY;
 const CLAN_ID = process.env.CLAN_ID || "cc381093-ddbd-48f7-aea1-1740959a2ce7";
 const PORT = process.env.PORT || 3000;
 
-let previousMembers = null;
+let previousCount = null;
 
 http.createServer((req, res) => res.end('OK')).listen(PORT);
 
-function sendWelcomeMessage(newMemberName) {
-    const messageText = `🐺 Welcome to Dz|Asl! 🎉 Glad to have you, ${newMemberName}.\n📌 Please contribute 200 Gold as an entry fee. Enjoy! 🚀`;
+function sendWelcomeMessage() {
+    const messageText = `🐺 Welcome to Dz|Asl! 🎉 Glad to have you.\n📌 Please contribute 200 Gold as an entry fee. Enjoy! 🚀`;
     const data = JSON.stringify({ message: messageText });
     
     const options = {
@@ -26,7 +26,7 @@ function sendWelcomeMessage(newMemberName) {
 
     const req = https.request(options, (res) => {
         res.on('data', () => {});
-        res.on('end', () => console.log(`✨ Welcome message successfully sent to ${newMemberName}!`));
+        res.on('end', () => console.log(`✨ Welcome message successfully sent to the clan chat!`));
     });
     req.write(data);
     req.end();
@@ -35,7 +35,7 @@ function sendWelcomeMessage(newMemberName) {
 function checkMembers() {
     const options = {
         hostname: 'api.wolvesville.com',
-        path: `/clans/${CLAN_ID}`,
+        path: `/clans/search?name=${encodeURIComponent("Dz|Asl")}`,
         headers: { 
             'Authorization': `Bot ${API_KEY}`,
             'Accept': 'application/json'
@@ -47,24 +47,19 @@ function checkMembers() {
         res.on('data', (chunk) => data += chunk);
         res.on('end', () => {
             try {
-                const clan = JSON.parse(data);
-                if (clan && clan.id && clan.members) {
-                    console.log(`✅ Clan: ${clan.name} | Members Fetched: ${clan.members.length}`);
+                const clans = JSON.parse(data);
+                if (clans && clans.length > 0) {
+                    const clan = clans.find(c => c.id === CLAN_ID) || clans[0];
+                    console.log(`✅ Clan: ${clan.name} | Members Count: ${clan.memberCount}`);
                     
-                    const currentMembersMap = new Map(clan.members.map(m => [m.id, m.username]));
-                    
-                    if (previousMembers !== null) {
-                        for (let [id, username] of currentMembersMap) {
-                            if (!previousMembers.has(id)) {
-                                console.log(`🎉 New member detected: ${username}`);
-                                sendWelcomeMessage(username);
-                                break;
-                            }
+                    if (previousCount !== null) {
+                        // إذا زاد العدد، فهذا يعني أن عضواً جديداً قد انضم!
+                        if (clan.memberCount > previousCount) {
+                            console.log(`🎉 New member joined! Previous: ${previousCount}, Current: ${clan.memberCount}`);
+                            sendWelcomeMessage();
                         }
                     }
-                    previousMembers = currentMembersMap;
-                } else {
-                    console.log('⚠️ Waiting for leader privileges / members list...');
+                    previousCount = clan.memberCount;
                 }
             } catch (e) {
                 console.error('Error parsing data:', e.message);
@@ -76,8 +71,7 @@ function checkMembers() {
 }
 
 setTimeout(() => {
-    console.log('Bot is active and monitoring clan with Leader access...');
+    console.log('Bot is active and monitoring member count changes...');
     checkMembers();
     setInterval(checkMembers, 5000);
 }, 2000);
-                            
