@@ -53,7 +53,6 @@ function checkMembers() {
                     console.log(`✅ Clan: ${clan.name} | Members Count: ${clan.memberCount}`);
                     
                     if (previousCount !== null) {
-                        // إذا زاد العدد، فهذا يعني أن عضواً جديداً قد انضم!
                         if (clan.memberCount > previousCount) {
                             console.log(`🎉 New member joined! Previous: ${previousCount}, Current: ${clan.memberCount}`);
                             sendWelcomeMessage();
